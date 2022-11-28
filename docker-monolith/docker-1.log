@@ -1,0 +1,7 @@
+﻿REPOSITORY          TAG                 IMAGE ID            CREATED				SIZE
+ubuntu-tmp-file     latest              bc3e2950dc5e        18 seconds ago		63.1MB
+ubuntu              18.04               71eaf13299f4        4 weeks ago			63.1MB
+hello-world         latest              feb5d9fea6a5        14 months ago		13.3kB
+
+Образ - по сути, шаблон, на основе которого можно создать контейнер (RO-слои). Контейнер - среда выполнения, созданная на базе образа (имеет RW-слой).
+В выводе команд видно, что у контейнера, в отличие от образа, есть state, сетевые настройки, отличия в секции Сonfig (например, присвоен hostname).
