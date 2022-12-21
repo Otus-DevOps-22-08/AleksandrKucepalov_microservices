@@ -1,5 +1,5 @@
 FROM ruby:3.1
-RUN apt-get update -qq && apt-get install -y build-essential
+RUN apt-get update -qq && apt-get install -y --force-yes build-essential
 
 ENV APP_HOME /app
 RUN mkdir $APP_HOME
