@@ -14,9 +14,9 @@ services:
   ui:
     container_name: dockermicroservices_ui
     build: ./ui
-    image: ${USERNAME}/ui:${UI_VERSION}
+    image: ${USERNAME}/ui:1.0
     ports:
-      - ${EXT_PORT}:9292/tcp
+      - 9292:9292/tcp
     networks:
       - front_net
   post:
