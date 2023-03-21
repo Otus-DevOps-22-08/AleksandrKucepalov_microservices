@@ -1,48 +1,71 @@
 version: '3.3'
 services:
+  zipkin:
+    image: openzipkin/zipkin:2.21.0
+    ports:
+       - "9411:9411"
   post_db:
+    container_name: dockermicroservices_mongo_db
     image: mongo:3.2
     volumes:
       - post_db:/data/db
     networks:
-      back_net:
-        aliases:
-          - comment_db
-          - post_db
+      - back_net
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN}
   ui:
-    image: ${USERNAME}/ui:${VERSION}
+    container_name: dockermicroservices_ui
+    image: ${USERNAME1}/ui:${VERSION}
     ports:
-      - ${EXT_PORT}:9292/tcp
+      - ${EXT_PORT}:${EXT_PORT}/tcp
     networks:
       - front_net
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: service.ui
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN}
   post:
-    image: ${USERNAME}/post:${VERSION}
+    container_name: dockermicroservices_post
+    image: ${USERNAME1}/post:${VERSION}
     networks:
-      - back_net
       - front_net
+      - back_net
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: service.post
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN}
   comment:
-    image: ${USERNAME}/comment:${VERSION}
+    container_name: dockermicroservices_comment
+    image: ${USERNAME1}/comment:${VERSION}
     networks:
-      - back_net
       - front_net
+      - back_net
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN}
   prometheus:
-    image: aleksandrkucepalov/prometheus
+    image: ${USERNAME1}/prometheus
     ports:
       - '9090:9090'
-    networks:
-      - front_net
-      - back_net
     volumes:
       - prometheus_data:/prometheus
     command: # Передаем доп параметры в командной строке
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--storage.tsdb.retention=1d' # Задаем время хранения метрик в 1 день
+    networks:
+      - front_net
+      - back_net
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN}
   node-exporter:
     image: prom/node-exporter:v0.15.2
     user: root
-    networks:
-      - back_net
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
@@ -51,6 +74,8 @@ services:
       - '--path.procfs=/host/proc'
       - '--path.sysfs=/host/sys'
       - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN}
 
 volumes:
   post_db:
@@ -59,3 +84,4 @@ volumes:
 networks:
   front_net:
   back_net:
+  
